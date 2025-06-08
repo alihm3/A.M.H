@@ -61,10 +61,59 @@
 				position: relative;
 				overflow: hidden;
 			}
+.controls {
+				display: flex;
+				justify-content: center;
+				gap: 20px;
+				margin-bottom: 20px;
+			}
+			
+			.control-btn {
+				width: 80px;
+				height: 60px;
+				font-size: 24px;
+				background: #444;
+				color: white;
+				border: none;
+				border-radius: 10px;
+				cursor: pointer;
+				user-select: none;
+				touch-action: manipulation;
+			}
+			
+			.control-btn:active {
+				background: #666;
+			}
+			
+			.control-info {
+				color: #666;
+				font-family: monospace;
+				text-align: center;
+				margin-bottom: 10px;
+			}
+			
+			@media (max-width: 600px) {
+				.controls {
+					gap: 10px;
+				}
+				.control-btn {
+					width: 60px;
+					height: 50px;
+					font-size: 20px;
+				}
+			}
+
+
 		</style>
 	</head>
 	<body>
-		<h2>Simple JavaScript Game</h2>
+		<h2> Simple Lava Game</h2>
+				<div class="control-info">Use arrow keys or buttons below to control</div>
+<div class="controls">
+			<button class="control-btn" id="leftBtn">←</button>
+			<button class="control-btn" id="upBtn">↑</button>
+			<button class="control-btn" id="rightBtn">→</button>
+		</div>
 
 		<script>
 			var LEVELS = [
@@ -551,6 +600,205 @@
 				}
 				startLevel(0);
 			}
+
+
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			
+
+
+			// إنشاء كائن للتحكم بالأزرار ولوحة المفاتيح
+			var controls = {
+				left: false,
+				right: false,
+				up: false
+			};
+			
+			// إعداد التحكم بالأزرار
+			function setupButtonControls() {
+				document.getElementById('leftBtn').addEventListener('touchstart', function(e) {
+					e.preventDefault();
+					controls.left = true;
+				});
+				document.getElementById('leftBtn').addEventListener('touchend', function(e) {
+					e.preventDefault();
+					controls.left = false;
+				});
+				document.getElementById('leftBtn').addEventListener('mousedown', function() {
+					controls.left = true;
+				});
+				document.getElementById('leftBtn').addEventListener('mouseup', function() {
+					controls.left = false;
+				});
+				document.getElementById('leftBtn').addEventListener('mouseleave', function() {
+					controls.left = false;
+				});
+				
+				document.getElementById('rightBtn').addEventListener('touchstart', function(e) {
+					e.preventDefault();
+					controls.right = true;
+				});
+				document.getElementById('rightBtn').addEventListener('touchend', function(e) {
+					e.preventDefault();
+					controls.right = false;
+				});
+				document.getElementById('rightBtn').addEventListener('mousedown', function() {
+					controls.right = true;
+				});
+				document.getElementById('rightBtn').addEventListener('mouseup', function() {
+					controls.right = false;
+				});
+				document.getElementById('rightBtn').addEventListener('mouseleave', function() {
+					controls.right = false;
+				});
+				
+				document.getElementById('upBtn').addEventListener('touchstart', function(e) {
+					e.preventDefault();
+					controls.up = true;
+				});
+				document.getElementById('upBtn').addEventListener('touchend', function(e) {
+					e.preventDefault();
+					controls.up = false;
+				});
+				document.getElementById('upBtn').addEventListener('mousedown', function() {
+					controls.up = true;
+				});
+				document.getElementById('upBtn').addEventListener('mouseup', function() {
+					controls.up = false;
+				});
+				document.getElementById('upBtn').addEventListener('mouseleave', function() {
+					controls.up = false;
+				});
+			}
+			
+			// إعداد التحكم بلوحة المفاتيح
+			function setupKeyboardControls() {
+				var arrowCodes = { 37: 'left', 38: 'up', 39: 'right' };
+				
+				function handler(event) {
+					if (arrowCodes.hasOwnProperty(event.keyCode)) {
+						var down = event.type == 'keydown';
+						controls[arrowCodes[event.keyCode]] = down;
+						event.preventDefault();
+					}
+				}
+				
+				addEventListener('keydown', handler);
+				addEventListener('keyup', handler);
+			}
+
+			function trackKeys() {
+				return controls;
+			}
+
+			function runAnimation(frameFunc) {
+				var lastTime = null;
+				function frame(time) {
+					var stop = false;
+					if (lastTime != null) {
+						var timeStep = Math.min(time - lastTime, 100) / 1000;
+						stop = frameFunc(timeStep) === false;
+					}
+					lastTime = time;
+					if (!stop) requestAnimationFrame(frame);
+				}
+				requestAnimationFrame(frame);
+			}
+
+			// تهيئة أنظمة التحكم
+			setupButtonControls();
+			setupKeyboardControls();
+			var arrows = trackKeys();
+
+			function runLevel(level, Display, andThen) {
+				var display = new Display(document.body, level);
+				runAnimation(function (step) {
+					level.animate(step, arrows);
+					display.drawFrame(step);
+					if (level.isFinished()) {
+						display.clear();
+						if (andThen) andThen(level.status);
+						return false;
+					}
+				});
+			}
+
+			function runGame(plans, Display) {
+				function startLevel(n) {
+					runLevel(new Level(plans[n]), Display, function (status) {
+						if (status == 'lost') startLevel(n);
+						else if (n < plans.length - 1) startLevel(n + 1);
+						else alert('You win!');
+					});
+				}
+				startLevel(0);
+			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 			runGame(LEVELS, DOMDisplay);
 		</script>
